@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import Link from "next/link";
 import { SignedOut } from "@clerk/nextjs";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { sidebarLinks } from "@/contants";
 import { usePathname } from "next/navigation";
 
