@@ -3,15 +3,33 @@
 import Question from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import Tag from "@/database/tag.model";
+import { CreateQuestionParams, GetQuestionsParams } from "./share.types";
+import User from "@/database/user.model";
 
-export async function createQuestion(parama: any) {
+export async function getQuestions(params: GetQuestionsParams) {
   try {
     // connect to DB
     connectToDatabase();
 
-    const { title, content, tags, author, path } = parama;
+    const questions = await Question.find({})
+      .populate({ path: "tags", model: Tag })
+      .populate({ path: "author", model: User });
 
-    // create a question
+    return { questions };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function createQuestion(params: CreateQuestionParams) {
+  try {
+    // connect to DB
+    connectToDatabase();
+
+    const { title, content, tags, author, path } = params;
+
+    // Create the question
     const question = await Question.create({
       title,
       content,
@@ -24,7 +42,7 @@ export async function createQuestion(parama: any) {
     for (const tag of tags) {
       const existingTag = await Tag.findOneAndUpdate(
         { name: { $regex: new RegExp(`^${tag}$`, "i") } },
-        { $setOnInsert: { name: tag }, $push: { question: question._id } },
+        { $setOnInsert: { name: tag }, $push: { questions: question._id } },
         { upsert: true, new: true }
       );
 
@@ -38,5 +56,8 @@ export async function createQuestion(parama: any) {
     // Create an interaction record fot the user's ask_question action
 
     // Increment author's ask_question by +5 for creating a question
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
